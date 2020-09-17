@@ -1,10 +1,13 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="AppTheme" parent="TextAppearance.AppCompat.Widget.ActionBar.Menu">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">#344955</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">#f9aa33</item>
     </style>
 
+    <style name="NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+
+    </style>
 </resources>
