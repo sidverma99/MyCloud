@@ -83,7 +83,7 @@ public class SignInActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(),"Please enter your email",Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if(TextUtils.isEmpty(email)){
+                if(TextUtils.isEmpty(password)){
                     mProgressBar.setVisibility(View.GONE);
                     mScrollView.setVisibility(View.VISIBLE);
                     Toast.makeText(getApplicationContext(),"Please enter your password",Toast.LENGTH_SHORT).show();
