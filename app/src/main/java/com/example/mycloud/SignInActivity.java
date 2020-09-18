@@ -1,9 +1,11 @@
 package com.example.mycloud;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -32,6 +34,7 @@ public class SignInActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         auth=FirebaseAuth.getInstance();
         setContentView(R.layout.sign_in);
         forgotPassword=(Button)findViewById(R.id.forgotPassword_btn);
@@ -44,6 +47,7 @@ public class SignInActivity extends AppCompatActivity {
         forgotPassword.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                removeKeyboard();
                 ForgotPassword forgotPassword=new ForgotPassword();
                 FragmentTransaction fragmentTransaction=getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.first_activity,forgotPassword,"second transaction").addToBackStack(null).commit();
@@ -52,6 +56,7 @@ public class SignInActivity extends AppCompatActivity {
         signUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                removeKeyboard();
                 SignUpActivity signUpFragment=new SignUpActivity();
                 FragmentTransaction fragmentTransaction=getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.first_activity,signUpFragment,"first transaction").addToBackStack(null).commit();
@@ -60,29 +65,36 @@ public class SignInActivity extends AppCompatActivity {
         signInBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                removeKeyboard();
                 mScrollView.setVisibility(View.GONE);
                 mProgressBar.setVisibility(View.VISIBLE);
                 String email=signInEmail.getText().toString().trim();
                 String password=signInPassword.getText().toString().trim();
 
                 if(TextUtils.isEmpty(email) && TextUtils.isEmpty(password)){
+                    mProgressBar.setVisibility(View.GONE);
+                    mScrollView.setVisibility(View.VISIBLE);
                     Toast.makeText(getApplicationContext(),"Please enter email and password",Toast.LENGTH_SHORT).show();
                     return;
                 }
                 if(TextUtils.isEmpty(email)){
+                    mProgressBar.setVisibility(View.GONE);
+                    mScrollView.setVisibility(View.VISIBLE);
                     Toast.makeText(getApplicationContext(),"Please enter your email",Toast.LENGTH_SHORT).show();
                     return;
                 }
                 if(TextUtils.isEmpty(email)){
+                    mProgressBar.setVisibility(View.GONE);
+                    mScrollView.setVisibility(View.VISIBLE);
                     Toast.makeText(getApplicationContext(),"Please enter your password",Toast.LENGTH_SHORT).show();
                     return;
                 }
                 auth.signInWithEmailAndPassword(email,password).addOnCompleteListener(SignInActivity.this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        mProgressBar.setVisibility(View.GONE);
-                        mScrollView.setVisibility(View.VISIBLE);
                         if (!task.isSuccessful()){
+                            mProgressBar.setVisibility(View.GONE);
+                            mScrollView.setVisibility(View.VISIBLE);
                             Toast.makeText(getApplicationContext(),getString(R.string.auth_failed),Toast.LENGTH_SHORT).show();
                         } else {
                             startActivity(new Intent(SignInActivity.this,MainActivity.class));
@@ -92,5 +104,12 @@ public class SignInActivity extends AppCompatActivity {
                 });
             }
         });
+    }
+    public void removeKeyboard(){
+        View v=this.getCurrentFocus();
+        if(v!=null){
+            InputMethodManager inputMethodManager=(InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.hideSoftInputFromWindow(v.getWindowToken(),0);
+        }
     }
 }
