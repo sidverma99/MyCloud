@@ -10,8 +10,9 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+
+import com.google.firebase.auth.FirebaseAuth;
 
 public class SignInActivity extends AppCompatActivity {
     private EditText signInEmail,signInPassword;
@@ -19,6 +20,7 @@ public class SignInActivity extends AppCompatActivity {
     private TextView signUp;
     private ProgressBar mProgressBar;
     private ScrollView mScrollView;
+    private FirebaseAuth auth;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -34,7 +36,9 @@ public class SignInActivity extends AppCompatActivity {
         forgotPassword.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                ForgotPassword forgotPassword=new ForgotPassword();
+                FragmentTransaction fragmentTransaction=getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.first_activity,forgotPassword,"second transaction").addToBackStack(null).commit();
             }
         });
         signUp.setOnClickListener(new View.OnClickListener() {
@@ -43,6 +47,12 @@ public class SignInActivity extends AppCompatActivity {
                 SignUpActivity signUpFragment=new SignUpActivity();
                 FragmentTransaction fragmentTransaction=getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.first_activity,signUpFragment,"first transaction").addToBackStack(null).commit();
+            }
+        });
+        signInBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
             }
         });
     }
