@@ -11,13 +11,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -46,10 +45,10 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView mRecyclerView;
     private StorageReference mStorageReference;
     private String userId;
+    private upload uploadData;
     private String fileName;
     private List<upload> uploadList=new ArrayList<>();
     private UploadAdapter uploadAdapter;
-    private LinearLayoutManager mLinearLayoutManager;
     private DatabaseReference mDatabaseReference;
 
     @Override
@@ -58,13 +57,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mToolbar=(Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
+        Log.d("action bar","action bar made");
         fab=(FloatingActionButton) findViewById(R.id.fab);
         userId= FirebaseAuth.getInstance().getCurrentUser().getUid();
         mRecyclerView=(RecyclerView)findViewById(R.id.recyclerView);
-        uploadAdapter=new UploadAdapter(getApplicationContext(),uploadList);
-        mLinearLayoutManager=new LinearLayoutManager(this);
-        mLinearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mRecyclerView.setHasFixedSize(true);
+        RecyclerView.LayoutManager mLinearLayoutManager=new LinearLayoutManager(MainActivity.this);
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
+        uploadAdapter=new UploadAdapter(getApplicationContext(),uploadList);
         mRecyclerView.setAdapter(uploadAdapter);
         mDatabaseReference= FirebaseDatabase.getInstance().getReference().child("uploads").child(userId);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -76,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 AlertDialog.Builder builder=new AlertDialog.Builder(MainActivity.this);
                 final MaterialAutoCompleteTextView input=new MaterialAutoCompleteTextView(MainActivity.this);
-                fileName=input.getText().toString();
                 input.setHint("File Name");
                 input.setFloatingLabelTextSize(50);
                 input.setFloatingLabelPadding(50);
@@ -96,10 +95,13 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         if (input.getText().toString().startsWith(" ")) {
                             Toast.makeText(MainActivity.this, "File name cannot start with space.", Toast.LENGTH_SHORT).show();
+                            return;
                         }
                         if (input.getText().toString().isEmpty()) {
                             Toast.makeText(MainActivity.this, "File name cannot be empty.", Toast.LENGTH_SHORT).show();
+                            return;
                         }
+                        fileName=input.getText().toString();
                         Intent intent=new Intent();
                         intent.setType("application/pdf");
                         intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -110,21 +112,6 @@ public class MainActivity extends AppCompatActivity {
                 dialog.show();
             }
         });
-        mDatabaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for(DataSnapshot dataSnapshot:snapshot.getChildren()){
-                    upload newUpload=dataSnapshot.getValue(upload.class);
-                    uploadList.add(newUpload);
-                }
-                uploadAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getApplicationContext(),"some error",Toast.LENGTH_SHORT).show();
-            }
-        });
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -133,6 +120,23 @@ public class MainActivity extends AppCompatActivity {
             if (data.getData()!=null){
                 if (data.getData()!=null){
                     uploadFile(data.getData());
+                    mDatabaseReference.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            uploadList.clear();
+                            for(DataSnapshot dataSnapshot:snapshot.getChildren()){
+                                upload newUpload=dataSnapshot.getValue(upload.class);
+                                uploadList.add(newUpload);
+                            }
+                            Log.d("data size",Integer.toString(uploadList.size()));
+                            uploadAdapter.notifyDataSetChanged();
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            Toast.makeText(getApplicationContext(),"some error",Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 } else {
                     Toast.makeText(getApplicationContext(),"No file chosen",Toast.LENGTH_SHORT).show();
                 }
@@ -140,11 +144,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private void uploadFile(Uri data){
-        mStorageReference= FirebaseStorage.getInstance().getReference().child("dataUploaded").child(userId);
+        mStorageReference= FirebaseStorage.getInstance().getReference().child(fileName+".pdf");
         mStorageReference.putFile(data).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                upload uploadData=new upload(fileName,taskSnapshot.getUploadSessionUri().toString());
+                uploadData=new upload(fileName+".pdf",taskSnapshot.getUploadSessionUri().toString());
                 mDatabaseReference.push().setValue(uploadData);
             }
         }).addOnFailureListener(new OnFailureListener() {

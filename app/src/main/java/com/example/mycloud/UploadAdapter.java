@@ -34,7 +34,7 @@ public class UploadAdapter extends RecyclerView.Adapter<UploadAdapter.ViewHolder
 
     @Override
     public int getItemCount() {
-        return 0;
+        return uploadList.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
