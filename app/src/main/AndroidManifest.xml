@@ -19,7 +19,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".MainActivity"
-            android:label="MyCloud"/>
+            android:label="MyCloud">
+        </activity>
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />

@@ -6,9 +6,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -23,13 +25,18 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.rengwuxian.materialedittext.MaterialAutoCompleteTextView;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     final static int PICK_PDF_CODE=2342;
@@ -39,6 +46,9 @@ public class MainActivity extends AppCompatActivity {
     private StorageReference mStorageReference;
     private String userId;
     private String fileName;
+    private List<upload> uploadList;
+    private UploadAdapter uploadAdapter;
+    private LinearLayoutManager mLinearLayoutManager;
     private DatabaseReference mDatabaseReference;
 
     @Override
@@ -50,13 +60,17 @@ public class MainActivity extends AppCompatActivity {
         fab=(FloatingActionButton) findViewById(R.id.fab);
         userId= FirebaseAuth.getInstance().getCurrentUser().getUid();
         mRecyclerView=(RecyclerView)findViewById(R.id.recyclerView);
+        uploadAdapter=new UploadAdapter(getApplicationContext(),uploadList);
+        mLinearLayoutManager=new LinearLayoutManager(this);
+        mLinearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mRecyclerView.setLayoutManager(mLinearLayoutManager);
+        mRecyclerView.setAdapter(uploadAdapter);
         mDatabaseReference= FirebaseDatabase.getInstance().getReference().child("uploads").child(userId);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-                    Intent intent=new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package"+getPackageName()));
-                    startActivity(intent);
+                    Toast.makeText(getApplicationContext(),"check ur storage permission",Toast.LENGTH_SHORT).show();
                     return;
                 }
                 AlertDialog.Builder builder=new AlertDialog.Builder(MainActivity.this);
@@ -91,10 +105,22 @@ public class MainActivity extends AppCompatActivity {
                         startActivityForResult(Intent.createChooser(intent,"select Picture"),PICK_PDF_CODE);
                     }
                 });
+                Dialog dialog=builder.create();
+                dialog.show();
+            }
+        });
+        mDatabaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
             }
         });
     }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
