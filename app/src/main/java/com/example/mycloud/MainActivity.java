@@ -36,6 +36,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.rengwuxian.materialedittext.MaterialAutoCompleteTextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -46,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private StorageReference mStorageReference;
     private String userId;
     private String fileName;
-    private List<upload> uploadList;
+    private List<upload> uploadList=new ArrayList<>();
     private UploadAdapter uploadAdapter;
     private LinearLayoutManager mLinearLayoutManager;
     private DatabaseReference mDatabaseReference;
@@ -112,12 +113,16 @@ public class MainActivity extends AppCompatActivity {
         mDatabaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-
+                for(DataSnapshot dataSnapshot:snapshot.getChildren()){
+                    upload newUpload=dataSnapshot.getValue(upload.class);
+                    uploadList.add(newUpload);
+                }
+                uploadAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
+                Toast.makeText(getApplicationContext(),"some error",Toast.LENGTH_SHORT).show();
             }
         });
     }
