@@ -48,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
     private upload uploadData;
     private String fileName;
     private List<upload> uploadList=new ArrayList<>();
-    private UploadAdapter uploadAdapter;
     private DatabaseReference mDatabaseReference;
 
     @Override
@@ -64,9 +63,25 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager mLinearLayoutManager=new LinearLayoutManager(MainActivity.this);
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
-        uploadAdapter=new UploadAdapter(getApplicationContext(),uploadList);
+        final UploadAdapter uploadAdapter=new UploadAdapter(getApplicationContext(),uploadList);
         mRecyclerView.setAdapter(uploadAdapter);
-        mDatabaseReference= FirebaseDatabase.getInstance().getReference().child("uploads").child(userId);
+        mDatabaseReference= FirebaseDatabase.getInstance().getReference().child(userId);
+        mDatabaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                uploadList.clear();
+                for(DataSnapshot dataSnapshot:snapshot.getChildren()){
+                    upload newUpload=dataSnapshot.getValue(upload.class);
+                    uploadList.add(newUpload);
+                }
+                uploadAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(getApplicationContext(),"some error",Toast.LENGTH_SHORT).show();
+            }
+        });
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -106,6 +121,22 @@ public class MainActivity extends AppCompatActivity {
                         intent.setType("application/pdf");
                         intent.setAction(Intent.ACTION_GET_CONTENT);
                         startActivityForResult(Intent.createChooser(intent,"select Picture"),PICK_PDF_CODE);
+                        mDatabaseReference.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                uploadList.clear();
+                                for(DataSnapshot dataSnapshot:snapshot.getChildren()){
+                                    upload newUpload=dataSnapshot.getValue(upload.class);
+                                    uploadList.add(newUpload);
+                                }
+                                uploadAdapter.notifyDataSetChanged();
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+                                Toast.makeText(getApplicationContext(),"some error",Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
                 });
                 Dialog dialog=builder.create();
@@ -120,23 +151,6 @@ public class MainActivity extends AppCompatActivity {
             if (data.getData()!=null){
                 if (data.getData()!=null){
                     uploadFile(data.getData());
-                    mDatabaseReference.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            uploadList.clear();
-                            for(DataSnapshot dataSnapshot:snapshot.getChildren()){
-                                upload newUpload=dataSnapshot.getValue(upload.class);
-                                uploadList.add(newUpload);
-                            }
-                            Log.d("data size",Integer.toString(uploadList.size()));
-                            uploadAdapter.notifyDataSetChanged();
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-                            Toast.makeText(getApplicationContext(),"some error",Toast.LENGTH_SHORT).show();
-                        }
-                    });
                 } else {
                     Toast.makeText(getApplicationContext(),"No file chosen",Toast.LENGTH_SHORT).show();
                 }
