@@ -71,7 +71,8 @@ public class MainActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 uploadList.clear();
                 for(DataSnapshot dataSnapshot:snapshot.getChildren()){
-                    upload upload1=dataSnapshot.getValue(upload.class);
+                    upload upload1;
+                    upload1 = dataSnapshot.getValue(upload.class);
                     uploadList.add(upload1);
                 }
                 uploadAdapter.notifyDataSetChanged();
