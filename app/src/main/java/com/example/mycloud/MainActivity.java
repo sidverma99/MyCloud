@@ -71,15 +71,15 @@ public class MainActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 uploadList.clear();
                 for(DataSnapshot dataSnapshot:snapshot.getChildren()){
-                    upload newUpload=dataSnapshot.getValue(upload.class);
-                    uploadList.add(newUpload);
+                    upload upload1=dataSnapshot.getValue(upload.class);
+                    uploadList.add(upload1);
                 }
                 uploadAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getApplicationContext(),"some error",Toast.LENGTH_SHORT).show();
+
             }
         });
         fab.setOnClickListener(new View.OnClickListener() {
