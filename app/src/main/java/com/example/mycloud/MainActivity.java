@@ -6,7 +6,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.MenuItemCompat;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -21,7 +22,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -53,11 +53,13 @@ public class MainActivity extends AppCompatActivity {
     private String fileName;
     private List<upload> uploadList=new ArrayList<>();
     private DatabaseReference mDatabaseReference;
+    private FirebaseAuth auth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        auth=FirebaseAuth.getInstance();
         mToolbar=(Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         Log.d("action bar","action bar made");
@@ -67,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager mLinearLayoutManager=new LinearLayoutManager(MainActivity.this);
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(this,DividerItemDecoration.VERTICAL));
         final UploadAdapter uploadAdapter=new UploadAdapter(getApplicationContext(),uploadList);
         mRecyclerView.setAdapter(uploadAdapter);
         mDatabaseReference= FirebaseDatabase.getInstance().getReference().child(userId);
@@ -187,6 +191,21 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu,menu);
         MenuItem searchMenu=menu.findItem(R.id.search);
+        MenuItem signOut=menu.findItem(R.id.sign_out);
+        signOut.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                int id=item.getItemId();
+                if(id==R.id.sign_out){
+                    auth.signOut();
+                    Intent i=new Intent(MainActivity.this,SignInActivity.class);
+                    startActivity(i);
+                    finish();
+                    return true;
+                }
+                return true;
+            }
+        });
         return true;
     }
 }

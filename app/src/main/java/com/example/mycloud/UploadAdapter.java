@@ -18,7 +18,6 @@ public class UploadAdapter extends RecyclerView.Adapter<UploadAdapter.ViewHolder
         this.mContext=context;
         this.uploadList=uploadList;
     }
-
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
