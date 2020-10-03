@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -18,6 +19,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,6 +33,7 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -46,7 +49,7 @@ import com.rengwuxian.materialedittext.MaterialAutoCompleteTextView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ItemTouch.RecyclerItemTouchHelperListener{
     final static int PICK_PDF_CODE=2342;
     private Toolbar mToolbar;
     private FloatingActionButton fab;
@@ -54,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
     private StorageReference mStorageReference;
     private String userId;
     private upload uploadData;
+    private CoordinatorLayout mLayout;
     private SearchView searchView;
     private String fileName;
     private UploadAdapter uploadAdapter;
@@ -67,20 +71,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         auth=FirebaseAuth.getInstance();
+        mLayout=(CoordinatorLayout)findViewById(R.id.coordinator);
         mToolbar=(Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         Log.d("action bar","action bar made");
         fab=(FloatingActionButton) findViewById(R.id.fab);
         userId= FirebaseAuth.getInstance().getCurrentUser().getUid();
+        mDatabaseReference= FirebaseDatabase.getInstance().getReference().child(userId);
         mRecyclerView=(RecyclerView)findViewById(R.id.recyclerView);
         mRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager mLinearLayoutManager=new LinearLayoutManager(MainActivity.this);
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this,DividerItemDecoration.VERTICAL));
-        uploadAdapter=new UploadAdapter(getApplicationContext(),uploadList);
+        uploadAdapter=new UploadAdapter(getApplicationContext(),uploadList,mDatabaseReference);
         mRecyclerView.setAdapter(uploadAdapter);
-        mDatabaseReference= FirebaseDatabase.getInstance().getReference().child(userId);
         mDatabaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -229,5 +234,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         return true;
+    }
+
+    @Override
+    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
+        if(viewHolder instanceof UploadAdapter.ViewHolder){
+            String name=uploadList.get(viewHolder.getAdapterPosition()).getName();
+            uploadAdapter.removeData(viewHolder.getAdapterPosition());
+            Snackbar.make(mLayout,name+"removed from cloud",Snackbar.LENGTH_LONG).setActionTextColor(Color.YELLOW).show();
+        }
     }
 }

@@ -9,11 +9,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.database.DatabaseReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,10 +25,12 @@ public class UploadAdapter extends RecyclerView.Adapter<UploadAdapter.ViewHolder
     private Context mContext;
     private List<upload> uploadList;
     private List<upload> uploadListFiltered;
-    public UploadAdapter(Context context,List<upload> uploadList){
+    private DatabaseReference databaseReference;
+    public UploadAdapter(Context context,List<upload> uploadList,DatabaseReference mDatabaseReference){
         this.mContext=context;
         this.uploadList=uploadList;
         this.uploadListFiltered=uploadList;
+        this.databaseReference=mDatabaseReference;
     }
     @NonNull
     @Override
@@ -77,9 +82,15 @@ public class UploadAdapter extends RecyclerView.Adapter<UploadAdapter.ViewHolder
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         private TextView fileName;
+        public RelativeLayout viewBackground, viewForeground;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             fileName=(TextView)itemView.findViewById(R.id.fileName);
+            viewForeground=(RelativeLayout)itemView.findViewById(R.id.view_foreground);
         }
+    }
+    public void removeData(int position){
+        uploadListFiltered.remove(position);
+        notifyDataSetChanged();
     }
 }
