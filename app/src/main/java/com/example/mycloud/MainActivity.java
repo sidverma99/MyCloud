@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.app.Dialog;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -22,6 +24,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import androidx.appcompat.widget.SearchView;
+import android.widget.SearchView.OnQueryTextListener;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -50,10 +54,13 @@ public class MainActivity extends AppCompatActivity {
     private StorageReference mStorageReference;
     private String userId;
     private upload uploadData;
+    private SearchView searchView;
     private String fileName;
+    private UploadAdapter uploadAdapter;
     private List<upload> uploadList=new ArrayList<>();
     private DatabaseReference mDatabaseReference;
     private FirebaseAuth auth;
+    public String url;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this,DividerItemDecoration.VERTICAL));
-        final UploadAdapter uploadAdapter=new UploadAdapter(getApplicationContext(),uploadList);
+        uploadAdapter=new UploadAdapter(getApplicationContext(),uploadList);
         mRecyclerView.setAdapter(uploadAdapter);
         mDatabaseReference= FirebaseDatabase.getInstance().getReference().child(userId);
         mDatabaseReference.addValueEventListener(new ValueEventListener() {
@@ -79,8 +86,7 @@ public class MainActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 uploadList.clear();
                 for(DataSnapshot dataSnapshot:snapshot.getChildren()){
-                    upload upload1;
-                    upload1 = dataSnapshot.getValue(upload.class);
+                    upload upload1 = dataSnapshot.getValue(upload.class);
                     uploadList.add(upload1);
                 }
                 uploadAdapter.notifyDataSetChanged();
@@ -190,7 +196,23 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu,menu);
-        MenuItem searchMenu=menu.findItem(R.id.search);
+        SearchManager searchManager=(SearchManager)getSystemService(Context.SEARCH_SERVICE);
+        searchView=(SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setMaxWidth(Integer.MAX_VALUE);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                uploadAdapter.getFilter().filter(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                uploadAdapter.getFilter().filter(newText);
+                return false;
+            }
+        });
         MenuItem signOut=menu.findItem(R.id.sign_out);
         signOut.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override

@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
@@ -30,6 +31,8 @@ public class SignInActivity extends AppCompatActivity {
     private ProgressBar mProgressBar;
     private ScrollView mScrollView;
     private FirebaseAuth auth;
+    private CheckBox rememberUser;
+    public boolean rememberMe=false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,6 +47,15 @@ public class SignInActivity extends AppCompatActivity {
         signInPassword=(EditText)findViewById(R.id.signIn_password);
         mProgressBar=(ProgressBar)findViewById(R.id.progressBar);
         mScrollView=(ScrollView)findViewById(R.id.scrollView);
+        rememberUser=(CheckBox) findViewById(R.id.remember_me);
+        rememberUser.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(rememberMe==false){
+                    rememberMe=true;
+                }
+            }
+        });
         forgotPassword.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
